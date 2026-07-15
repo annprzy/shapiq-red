@@ -101,9 +101,14 @@ write_to = "src/shapiq/_version.py"
 [tool.setuptools.packages.find]
 where = ["./src"]
 include = ["shapiq*", "lazy_dispatch"]
+exclude = [".vs*", ".vscode*"]
 
 [tool.setuptools.dynamic]
 readme = {file = ["README.md", "CHANGELOG.md"], content-type = "text/markdown"}
+
+[tool.setuptools]
+exclude-package-data = { "*" = [".vs/*", ".vscode/*"] }
+
 
 [project.urls]
 documentation = "https://shapiq.readthedocs.io"
@@ -270,6 +275,9 @@ manylinux-x86_64-image = "manylinux_2_28"
 # tarball, not brew) so wheels can target an old MACOSX_DEPLOYMENT_TARGET.
 
 [tool.cibuildwheel.windows]
+
+[tool.uv.sources]
+shapiq = { workspace = true }
 # MSVC ships OpenMP runtime (vcomp140.dll) with Visual C++ Redistributable
 # No extra setup needed; /openmp flag in setup.py handles everything
 
@@ -321,6 +329,7 @@ docs = [
 dev = [
     "notebook>=7.3.3",
     "ipywidgets",
+    "shapiq",
     {include-group = "test"},
     {include-group = "lint"},
     {include-group = "all_ml"},

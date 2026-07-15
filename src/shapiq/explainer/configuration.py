@@ -21,6 +21,7 @@ from shapiq import (
     RegressionFSII,
     UnbiasedKernelSHAP,
     kADDSHAP,
+    PermutationSamplingRred
 )
 from shapiq.approximator.base import Approximator, ValidApproximationIndices
 from shapiq.approximator.regression.base import Regression
@@ -46,6 +47,7 @@ APPROXIMATOR_CONFIGURATIONS: dict[
         "STII": PermutationSamplingSTII,
         "k-SII": PermutationSamplingSII,
         "SV": PermutationSamplingSV,
+        "Rred": PermutationSamplingRred
     },
     "montecarlo": {
         "SII": SHAPIQ,
