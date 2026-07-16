@@ -49,6 +49,7 @@ class TabularExplainer(Explainer):
         data: np.ndarray,
         *,
         class_index: int | None = None,
+        x: np.ndarray|None=None,
         imputer: Imputer | TabularExplainerImputers = "marginal",
         approximator: (
             Literal["auto"] | TabularExplainerApproximators | Approximator[TabularExplainerIndices]
@@ -59,6 +60,8 @@ class TabularExplainer(Explainer):
         verbose: bool = False,
         **kwargs: Any,
     ) -> None:
+        self.model=model
+        print("Model and x in tabular:", self.model)
         """Initializes the TabularExplainer.
 
         Args:
@@ -166,6 +169,7 @@ class TabularExplainer(Explainer):
             self.index,
             self._max_order,
             self._n_features,
+            self.model,
             random_state,
         )
 
@@ -176,6 +180,9 @@ class TabularExplainer(Explainer):
         *,
         random_state: int | None = None,
     ) -> InteractionValues:
+        
+        self.x=x
+        print("x in explain_function", self.x)
         """Explains the model's predictions.
 
         Args:
@@ -199,7 +206,7 @@ class TabularExplainer(Explainer):
         self.imputer.fit(x)
 
         # explain
-        interaction_values = self.approximator(budget=budget, game=self.imputer)
+        interaction_values = self.approximator(budget=budget, game=self.imputer,x=self.x)
         interaction_values.baseline_value = self.baseline_value
         # Adjust the Baseline Value if the empty value is the baseline
         if is_empty_value_the_baseline(interaction_values.index):

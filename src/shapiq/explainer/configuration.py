@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import warnings
 from typing import Literal
+import numpy as np
 
 from shapiq import (
     SHAPIQ,
@@ -26,6 +27,8 @@ from shapiq import (
 from shapiq.approximator.base import Approximator, ValidApproximationIndices
 from shapiq.approximator.regression.base import Regression
 from shapiq.game_theory.indices import index_generalizes_bv, index_generalizes_sv
+from shapiq.typing import Model
+
 
 ValidApproximatorTypes = Literal[
     "spex", "montecarlo", "svarm", "permutation", "regression", "proxyshap", "proxyspex"
@@ -134,6 +137,7 @@ def setup_approximator_automatically(
     index: ValidApproximationIndices,
     max_order: int,
     n_players: int,
+    model: Model,
     random_state: int | None = None,
 ) -> Approximator:
     """Select the approximator automatically based on the index and max_order.
@@ -154,6 +158,7 @@ def setup_approximator_automatically(
                 max_order=max_order,
                 index=index,
                 random_state=random_state,
+                model=model
             )
         # SPEX is the placeholder (optional ``sparse`` extra not installed). Warn and fall
         # through to the dense approximators so ``"auto"`` still returns a working approximator.
@@ -173,7 +178,7 @@ def setup_approximator_automatically(
     if index == "FBII":
         return RegressionFBII(n=n_players, max_order=max_order, random_state=random_state)
     if index == "Rred":
-        return PermutationSamplingRred(n=n_players, max_order=max_order, random_state=random_state)
+        return PermutationSamplingRred(n=n_players, max_order=max_order, random_state=random_state, model=model)
     if index in KernelSHAPIQ.valid_indices:
         return KernelSHAPIQ(
             n=n_players,
@@ -198,6 +203,7 @@ def setup_approximator(
     index: ValidApproximationIndices,
     max_order: int,
     n_players: int,
+    model: Model,
     random_state: int | None = None,
 ) -> Approximator:
     """Set up the approximator for the explainer based on the selected index and order.
@@ -222,6 +228,7 @@ def setup_approximator(
             max_order=max_order,
             n_players=n_players,
             random_state=random_state,
+            model=model,
         )
     if isinstance(approximator, str):
         # if the approx is a string and not "auto", we get it from the configurations and set it up
@@ -244,10 +251,12 @@ def setup_approximator(
             max_order=max_order,
             random_state=random_state,
             index=index,
+            model=model,
         )
     return approximator_cls(
         n=n_players,
         max_order=max_order,
         random_state=random_state,
         index=index,
+        model=model,
     )

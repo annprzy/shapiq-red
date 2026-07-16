@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Literal
 
 from .base import Sparse, ValidSparseIndices
+from shapiq.typing import Model
 
 
 class SPEX(Sparse):
@@ -18,6 +19,7 @@ class SPEX(Sparse):
         self,
         *,
         n: int,
+        model: Model = None,
         max_order: int = 2,
         index: ValidSparseIndices = "k-SII",
         top_order: bool = False,
@@ -57,6 +59,7 @@ class SPEX(Sparse):
             index=index,
             top_order=top_order,
             random_state=random_state,
+            model=model,
             transform_type="fourier",
             decoder_type=decoder_type,
             degree_parameter=degree_parameter,

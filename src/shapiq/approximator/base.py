@@ -18,7 +18,8 @@ if TYPE_CHECKING:
 
     from shapiq.game import Game
     from shapiq.interaction_values import InteractionValues
-    from shapiq.typing import FloatVector
+    from shapiq.typing import FloatVector, Model
+    from tabular import TabularExplainer
 
 __all__ = [
     "Approximator",
@@ -39,7 +40,7 @@ class Approximator(ABC, Generic[TIndices]):
     to estimate all indices.
 
     Attributes:
-        n: The number of players.
+     x   n: The number of players.
         _grand_coalition_set: The set of players (starting from ``0`` to ``n - 1``).
         _grand_coalition_array: The array of players (starting from ``0`` to ``n``).
         max_order: The interaction order of the approximation.
@@ -62,6 +63,8 @@ class Approximator(ABC, Generic[TIndices]):
         max_order: int,
         index: TIndices,
         *,
+        x: np.ndarray |None= None,
+        model: Model | None=None,
         top_order: bool = False,
         min_order: int = 0,
         pairing_trick: bool = False,
@@ -70,7 +73,7 @@ class Approximator(ABC, Generic[TIndices]):
         initialize_dict: bool = True,
     ) -> None:
         """Initialize the Approximator.
-
+        
         Args:
             n: The number of players.
 
@@ -109,6 +112,8 @@ class Approximator(ABC, Generic[TIndices]):
 
         # get approximation parameters
         self.n: int = n
+        self.x: np.ndarray = x
+        self.model: Model = model
         self.top_order: bool = top_order
         self.max_order: int = max_order
         self.min_order: int = self.max_order if self.top_order else min_order
@@ -145,6 +150,7 @@ class Approximator(ABC, Generic[TIndices]):
     def __call__(
         self,
         budget: int,
+        x: np.ndarray,
         game: Game | Callable[[np.ndarray], np.ndarray],
         **kwargs: Any,
     ) -> InteractionValues:
@@ -161,7 +167,7 @@ class Approximator(ABC, Generic[TIndices]):
             **kwargs: Additional keyword arguments to pass to the `approximate` method.
 
         """
-        return self.approximate(budget=budget, game=game, **kwargs)
+        return self.approximate(budget=budget, game=game,x=x, **kwargs)
 
     def set_random_state(self, random_state: int | None = None) -> None:
         """Sets the random state for the approximator.
@@ -178,6 +184,7 @@ class Approximator(ABC, Generic[TIndices]):
     def approximate(
         self,
         budget: int,
+        x: np.ndarray,
         game: Game | Callable[[np.ndarray], np.ndarray],
         **kwargs: Any,
     ) -> InteractionValues:
@@ -254,6 +261,9 @@ class Approximator(ABC, Generic[TIndices]):
 
         """
         return np.zeros(len(self._interaction_lookup), dtype=dtype)
+    def _get_data(self) -> np.ndarray:
+        print("getting data", self.x)
+        return self.x
 
     @property
     def _order_iterator(self) -> range:

@@ -16,7 +16,7 @@ ALL_AVAILABLE_CONCEPTS: dict[IndexType, dict] = {
     "Rred": {
         "name": "Redundancy via a redundancy gap",
         "source": "https://arxiv.org/pdf/2603.13326",
-        "generalizes": "SV",
+        "generalizes": None,
     },
     "BII": {
         "name": "Banzhaf Interaction Index",

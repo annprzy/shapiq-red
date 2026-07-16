@@ -3,5 +3,6 @@
 from .sii import PermutationSamplingSII
 from .stii import PermutationSamplingSTII
 from .sv import PermutationSamplingSV
+from .rred import PermutationSamplingRred
 
-__all__ = ["PermutationSamplingSII", "PermutationSamplingSTII", "PermutationSamplingSV"]
+__all__ = ["PermutationSamplingSII", "PermutationSamplingSTII", "PermutationSamplingSV", "PermutationSamplingRred"]
