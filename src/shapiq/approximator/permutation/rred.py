@@ -1,4 +1,4 @@
-"""This module implements the Permutation Sampling approximator for the SII (and k-SII) index."""
+"""This module implements the Permutation Sampling approximator for the Rred index."""
 
 from __future__ import annotations
 
@@ -15,23 +15,16 @@ if TYPE_CHECKING:
 
     from shapiq.game import Game
 
-ValidPermutationSIIIndices = Literal["SII", "k-SII"]
+ValidPermutationRredIndices = Literal["Rred"]
 
 
-class PermutationSamplingRred(Approximator[ValidPermutationSIIIndices]):
-    """Permutation Sampling approximator for the SII (and k-SII) index.
-
-    See Also:
-        - :class:`~shapiq.approximator.permutation.stii.PermutationSamplingSTII`: The Permutation
-            Sampling approximator for the STII index
-        - :class:`~shapiq.approximator.permutation.sv.PermutationSamplingSV`: The Permutation
-            Sampling approximator for the SV index
-
+class PermutationSamplingRred(Approximator[ValidPermutationRredIndices]):
+    """Permutation Sampling approximator for the Rred index.
     """
 
     #: override the valid indices for this approximator
-    valid_indices: tuple[ValidPermutationSIIIndices, ...] = tuple(
-        get_args(ValidPermutationSIIIndices)
+    valid_indices: tuple[ValidPermutationRredIndices, ...] = tuple(
+        get_args(ValidPermutationRredIndices)
     )
     """The valid indices for this permutation sampling approximator."""
 
@@ -39,19 +32,19 @@ class PermutationSamplingRred(Approximator[ValidPermutationSIIIndices]):
         self,
         n: int,
         max_order: int = 2,
-        index: ValidPermutationSIIIndices = "k-SII",
+        index: ValidPermutationRredIndices = "Rred",
         *,
         top_order: bool = False,
         random_state: int | None = None,
     ) -> None:
-        """Initialize the Permutation Sampling approximator for SII (and k-SII).
+        """Initialize the Permutation Sampling approximator for Rred.
 
         Args:
             n: The number of players.
 
             max_order: The interaction order of the approximation. Defaults to ``2``.
 
-            index: The interaction index to compute. Must be either ``'SII'`` or ``'k-SII'``.
+            index: The interaction index to compute. Must be Rrred.
 
             top_order: Whether to approximate only the top order interactions (``True``) or all
                 orders up to the specified order (``False``, default).
@@ -60,8 +53,8 @@ class PermutationSamplingRred(Approximator[ValidPermutationSIIIndices]):
                 ``None``.
 
         """
-        if index not in ["SII", "k-SII"]:
-            msg = f"Invalid index {index}. Must be either 'SII' or 'k-SII'."
+        if index not in ["Rred"]:
+            msg = f"Invalid index {index}. Must be Rred"
             raise ValueError(msg)
         super().__init__(
             n=n,
@@ -76,7 +69,7 @@ class PermutationSamplingRred(Approximator[ValidPermutationSIIIndices]):
         """Compute the cost of a single iteration of the permutation sampling.
 
         Computes the cost of performing a single iteration of the permutation sampling given
-        the order, the number of players, and the SII index.
+        the order, the number of players, and the Rred index.
 
         Returns:
             int: The cost of a single iteration.
@@ -89,7 +82,7 @@ class PermutationSamplingRred(Approximator[ValidPermutationSIIIndices]):
         return iteration_cost
 
     def _compute_order_iterator(self) -> np.ndarray:
-        """Computes the order iterator for the SII index.
+        """Computes the order iterator for the Rred index.
 
         Returns:
             np.ndarray: The order iterator.

@@ -13,6 +13,11 @@ ALL_AVAILABLE_CONCEPTS: dict[IndexType, dict] = {
         "source": "https://link.springer.com/article/10.1007/s001820050125",
         "generalizes": "SV",
     },
+    "Rred": {
+        "name": "Redundancy via a redundancy gap",
+        "source": "https://arxiv.org/pdf/2603.13326",
+        "generalizes": "SV",
+    },
     "BII": {
         "name": "Banzhaf Interaction Index",
         "source": "https://link.springer.com/article/10.1007/s001820050125",

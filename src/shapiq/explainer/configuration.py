@@ -163,6 +163,7 @@ def setup_approximator_automatically(
             "which may be slow for this number of players.",
             stacklevel=2,
         )
+   
     if index == "SV" or (max_order == 1 and (index == "SV" or index_generalizes_sv(index))):
         return KernelSHAP(n=n_players, random_state=random_state)
     if index == "BV" or (max_order == 1 and (index == "BV" or index_generalizes_bv(index))):
@@ -171,6 +172,8 @@ def setup_approximator_automatically(
         return RegressionFSII(n=n_players, max_order=max_order, random_state=random_state)
     if index == "FBII":
         return RegressionFBII(n=n_players, max_order=max_order, random_state=random_state)
+    if index == "Rred":
+        return PermutationSamplingRred(n=n_players, max_order=max_order, random_state=random_state)
     if index in KernelSHAPIQ.valid_indices:
         return KernelSHAPIQ(
             n=n_players,
