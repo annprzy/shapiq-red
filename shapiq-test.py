@@ -21,23 +21,31 @@ def _or(coalitions: np.ndarray):
             outputs[i]=0
     print(outputs, coalitions)
     return outputs
+def _and_or(coalitions: np.ndarray):
+        """
+        outputs the result of the custom gate for each coalition of binary inputs.
+        """
+        outputs = np.zeros(coalitions.shape[0])
+        for i, row in enumerate(coalitions):
+            if row[0] and row[1] or row[2]:
+                outputs[i] = 1
+            else:
+                outputs[i] = 0
+        return outputs
 
 explainer = shapiq.TabularExplainer(
-    model=_or,
+    model=_and,
     data=np.array([
-    [0, 0, 0],
-    [0, 0, 1],
-    [0, 1, 0],
-    [0, 1, 1],
-    [1, 0, 0],
-    [1, 0, 1],
-    [1, 1, 0],
-    [1, 1, 1]
+    [0,0],
+    [0,1],
+    [1,0],
+    [1,1]
     ]),
     index="Rred",
     max_order=2,
+    normalize=False,
 )
 
-interaction_values = explainer.explain(np.array([1,1,0]), budget=256)
+interaction_values = explainer.explain(np.array([0,0]), budget=256)
 
 print(interaction_values)

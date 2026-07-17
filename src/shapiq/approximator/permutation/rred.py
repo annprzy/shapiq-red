@@ -190,23 +190,23 @@ class PermutationSamplingRred(Approximator[ValidPermutationRredIndices]):
                         if coalition[u] or coalition[v]:
                             continue
                         else:
-                            print("x, model",x, self.model)
-                            fS = self.model(np.array([self.matmul(x,coalition)]))[0]
+                            #print("x, model",x, self.model)
+                            fS = game(np.array([coalition]))[0]
                             coalition[u] = True
-                            guS = self.model(np.array([self.matmul(x,coalition)]))[0] - fS
+                            guS = game(np.array([coalition]))[0] - fS
                             coalition[u] = False
 
                             coalition[v] = True
-                            gvS = self.model(np.array([self.matmul(x,coalition)]))[0] - fS
+                            gvS = game(np.array([coalition]))[0] - fS
                             coalition[v] = False
 
                             coalition[v] = True
                             coalition[u] = True
-                            guvS = self.model(np.array([self.matmul(x,coalition)]))[0] - fS
+                            guvS = game(np.array([coalition]))[0] - fS
                             coalition[v] = False
                             coalition[u] = False
 
-                            print("fs,gus,gvs,guvs",fS, guS, gvS, guvS)
+                            #print("fs,gus,gvs,guvs",fS, guS, gvS, guvS)
 
                             gmax = max(abs(guS), abs(gvS))
 
@@ -226,13 +226,13 @@ class PermutationSamplingRred(Approximator[ValidPermutationRredIndices]):
             span_mean[i]+=1
         result = np.divide(result, span_mean, out=result, where=span_mean != 0)
 
-        print(result)
+        #print(result)
         return InteractionValues(
             values=result,
             interaction_lookup=self._interaction_lookup,
             baseline_value=empty_val,
-            min_order=self.min_order,
-            max_order=self.max_order,
+            min_order=2,
+            max_order=2,
             n_players=self.n,
             index=self.approximation_index,
             estimated=True,

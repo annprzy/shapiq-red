@@ -61,7 +61,7 @@ class TabularExplainer(Explainer):
         **kwargs: Any,
     ) -> None:
         self.model=model
-        print("Model and x in tabular:", self.model)
+        #print("Model and x in tabular:", self.model)
         """Initializes the TabularExplainer.
 
         Args:
@@ -182,7 +182,6 @@ class TabularExplainer(Explainer):
     ) -> InteractionValues:
         
         self.x=x
-        print("x in explain_function", self.x)
         """Explains the model's predictions.
 
         Args:
