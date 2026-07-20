@@ -62,6 +62,7 @@ class Approximator(ABC, Generic[TIndices]):
         n: int,
         max_order: int,
         index: TIndices,
+        data: np.ndarray | None = None,
         *,
         x: np.ndarray |None= None,
         model: Model | None=None,
@@ -113,6 +114,7 @@ class Approximator(ABC, Generic[TIndices]):
         # get approximation parameters
         self.n: int = n
         self.x: np.ndarray = x
+        self.data: np.ndarray = data
         self.model: Model = model
         self.top_order: bool = top_order
         self.max_order: int = max_order
@@ -151,6 +153,7 @@ class Approximator(ABC, Generic[TIndices]):
         self,
         budget: int,
         x: np.ndarray,
+        data: np.ndarray,
         game: Game | Callable[[np.ndarray], np.ndarray],
         **kwargs: Any,
     ) -> InteractionValues:
@@ -167,7 +170,7 @@ class Approximator(ABC, Generic[TIndices]):
             **kwargs: Additional keyword arguments to pass to the `approximate` method.
 
         """
-        return self.approximate(budget=budget, game=game,x=x, **kwargs)
+        return self.approximate(budget=budget, game=game,x=x,data=data, **kwargs)
 
     def set_random_state(self, random_state: int | None = None) -> None:
         """Sets the random state for the approximator.
@@ -185,6 +188,7 @@ class Approximator(ABC, Generic[TIndices]):
         self,
         budget: int,
         x: np.ndarray,
+        data: np.ndarray,
         game: Game | Callable[[np.ndarray], np.ndarray],
         **kwargs: Any,
     ) -> InteractionValues:
@@ -262,8 +266,8 @@ class Approximator(ABC, Generic[TIndices]):
         """
         return np.zeros(len(self._interaction_lookup), dtype=dtype)
     def _get_data(self) -> np.ndarray:
-        print("getting data", self.x)
-        return self.x
+        print("getting data", self.data)
+        return self.data
 
     @property
     def _order_iterator(self) -> range:

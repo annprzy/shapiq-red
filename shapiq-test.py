@@ -36,10 +36,10 @@ def _and_or(coalitions: np.ndarray):
 explainer = shapiq.TabularExplainer(
     model=_and,
     data=np.array([
-    [0,0],
-    [0,1],
-    [1,0],
-    [1,1]
+    [False,False],
+    [False,True],
+    [True,False],
+    [True,True]
     ]),
     index="Rred",
     max_order=2,

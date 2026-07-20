@@ -61,7 +61,8 @@ class TabularExplainer(Explainer):
         **kwargs: Any,
     ) -> None:
         self.model=model
-        #print("Model and x in tabular:", self.model)
+        self.data=data
+        print("Model and x in tabular:", self.model, self.data)
         """Initializes the TabularExplainer.
 
         Args:
@@ -205,7 +206,7 @@ class TabularExplainer(Explainer):
         self.imputer.fit(x)
 
         # explain
-        interaction_values = self.approximator(budget=budget, game=self.imputer,x=self.x)
+        interaction_values = self.approximator(budget=budget, game=self.imputer,x=self.x, data=self.data)
         interaction_values.baseline_value = self.baseline_value
         # Adjust the Baseline Value if the empty value is the baseline
         if is_empty_value_the_baseline(interaction_values.index):

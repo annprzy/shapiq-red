@@ -93,27 +93,11 @@ class PermutationSamplingRred(Approximator[ValidPermutationRredIndices]):
         """
         min_order = 1 if not self.top_order else self.max_order
         return np.arange(min_order, self.max_order + 1)
-    def generate_all_permutations(self, stop, current_array):
-        if len(current_array) == stop:
-            return current_array
-        L = len(current_array)
-        for i in range(L):
-            x=current_array[i].copy()
-            current_array[i].append(True)
-            x.append(False)
-            current_array.append(x)
-        return self.generate_all_permutations(stop, current_array)
-    def matmul(self,mat1,mat2):
-        print(mat1,mat2)
-        ret=mat1.copy()
-        for i in range(len(mat1)):
-            if mat2[i]==False:
-                ret[i]=0
-        return ret
     def approximate(
         self,
         budget: int,
         x: np.ndarray,
+        data: np.ndarray,
         game: Game | Callable[[np.ndarray], np.ndarray],
         batch_size: int | None = 5,
         **kwargs: Any,  # noqa: ARG002
@@ -174,7 +158,8 @@ class PermutationSamplingRred(Approximator[ValidPermutationRredIndices]):
             batch_size,
             self.iteration_cost,
         )
-        coalitions = self.generate_all_permutations(2**self.n, [[True], [False]])
+        print("x in rred", data)
+        coalitions = data
 
         result: FloatVector = self._init_result()
         span_mean: FloatVector = self._init_result()
