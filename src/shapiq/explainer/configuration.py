@@ -22,7 +22,8 @@ from shapiq import (
     RegressionFSII,
     UnbiasedKernelSHAP,
     kADDSHAP,
-    PermutationSamplingRred
+    PermutationSamplingRred,
+    PermutationSamplingRI
 )
 from shapiq.approximator.base import Approximator, ValidApproximationIndices
 from shapiq.approximator.regression.base import Regression
@@ -50,7 +51,8 @@ APPROXIMATOR_CONFIGURATIONS: dict[
         "STII": PermutationSamplingSTII,
         "k-SII": PermutationSamplingSII,
         "SV": PermutationSamplingSV,
-        "Rred": PermutationSamplingRred
+        "Rred": PermutationSamplingRred,
+        "RI": PermutationSamplingRI,
     },
     "montecarlo": {
         "SII": SHAPIQ,
@@ -179,6 +181,14 @@ def setup_approximator_automatically(
         return RegressionFBII(n=n_players, max_order=max_order, random_state=random_state)
     if index == "Rred":
         return PermutationSamplingRred(n=n_players, max_order=max_order, random_state=random_state, model=model)
+    if index == "RI":
+        return PermutationSamplingRI(n=n_players, max_order=max_order, random_state=random_state, approximator=SVARMIQ(
+            n=n_players,
+            max_order=max_order,
+            top_order=False,
+            random_state=random_state,
+            index="k-SII",
+        ))
     if index in KernelSHAPIQ.valid_indices:
         return KernelSHAPIQ(
             n=n_players,

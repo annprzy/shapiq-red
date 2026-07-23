@@ -78,6 +78,7 @@ IndexType = Literal[
     "Moebius",
     "ELC",
     "Rred",
+    "RI",
 ]
 """A type representing the indices used throughout the package."""
 

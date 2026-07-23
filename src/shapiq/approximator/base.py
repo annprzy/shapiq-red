@@ -64,6 +64,7 @@ class Approximator(ABC, Generic[TIndices]):
         index: TIndices,
         data: np.ndarray | None = None,
         *,
+        approximator: Approximator | None=None,
         x: np.ndarray |None= None,
         model: Model | None=None,
         top_order: bool = False,
@@ -266,7 +267,7 @@ class Approximator(ABC, Generic[TIndices]):
         """
         return np.zeros(len(self._interaction_lookup), dtype=dtype)
     def _get_data(self) -> np.ndarray:
-        print("getting data", self.data)
+        #print("getting data", self.data)
         return self.data
 
     @property

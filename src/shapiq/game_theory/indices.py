@@ -18,6 +18,11 @@ ALL_AVAILABLE_CONCEPTS: dict[IndexType, dict] = {
         "source": "https://arxiv.org/pdf/2603.13326",
         "generalizes": None,
     },
+    "RI": {
+            "name": "Naive redundancy index",
+            "source": None,
+            "generalizes": None,
+    },
     "BII": {
         "name": "Banzhaf Interaction Index",
         "source": "https://link.springer.com/article/10.1007/s001820050125",

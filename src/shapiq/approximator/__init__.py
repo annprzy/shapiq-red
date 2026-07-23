@@ -12,6 +12,7 @@ from .permutation.sii import PermutationSamplingSII
 from .permutation.stii import PermutationSamplingSTII
 from .permutation.sv import PermutationSamplingSV
 from .permutation.rred import PermutationSamplingRred
+from .permutation.ri import PermutationSamplingRI
 from .proxy import ProxySHAP, ProxySPEX, RegressionMSR
 from .regression import (
     InconsistentKernelSHAPIQ,

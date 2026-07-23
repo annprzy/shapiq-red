@@ -1,4 +1,4 @@
-"""This module implements the Permutation Sampling approximator for the Rred index."""
+"""This module implements the Permutation Sampling approximator for the RI index."""
 
 from __future__ import annotations
 
@@ -16,37 +16,38 @@ if TYPE_CHECKING:
     from shapiq.game import Game
     from shapiq.typing import FloatVector, IntVector, Model
 
-ValidPermutationRredIndices = Literal["Rred"]
+ValidPermutationRIIndices = Literal["RI"]
 
 
-class PermutationSamplingRred(Approximator[ValidPermutationRredIndices]):
-    """Permutation Sampling approximator for the Rred index.
+class PermutationSamplingRI(Approximator[ValidPermutationRIIndices]):
+    """Permutation Sampling approximator for the RI index.
     """
 
     #: override the valid indices for this approximator
-    valid_indices: tuple[ValidPermutationRredIndices, ...] = tuple(
-        get_args(ValidPermutationRredIndices)
+    valid_indices: tuple[ValidPermutationRIIndices, ...] = tuple(
+        get_args(ValidPermutationRIIndices)
     )
     """The valid indices for this permutation sampling approximator."""
 
     def __init__(
         self,
         n: int,
-        model: Model,
         max_order: int = 2,
-        index: ValidPermutationRredIndices = "Rred",
+        index: ValidPermutationRIIndices = "RI",
+        
         *,
+        approximator: Approximator | None = None,
         top_order: bool = False,
         random_state: int | None = None,
     ) -> None:
-        """Initialize the Permutation Sampling approximator for Rred.
+        """Initialize the Permutation Sampling approximator for RI.
 
         Args:
             n: The number of players.
 
             max_order: The interaction order of the approximation. Defaults to ``2``.
 
-            index: The interaction index to compute. Must be Rrred.
+            index: The interaction index to compute. Must be RI.
 
             top_order: Whether to approximate only the top order interactions (``True``) or all
                 orders up to the specified order (``False``, default).
@@ -55,16 +56,17 @@ class PermutationSamplingRred(Approximator[ValidPermutationRredIndices]):
                 ``None``.
 
         """
-        if index not in ["Rred"]:
-            msg = f"Invalid index {index}. Must be Rred"
+        if index not in ["RI"]:
+            msg = f"Invalid index {index}. Must be RI"
             raise ValueError(msg)
+        self.approximator=approximator
         super().__init__(
             n=n,
             max_order=max_order,
             index=index,
             top_order=top_order,
             random_state=random_state,
-            model=model,
+            approximator=approximator
         )
         self.iteration_cost: int = self._compute_iteration_cost()
 
@@ -72,7 +74,7 @@ class PermutationSamplingRred(Approximator[ValidPermutationRredIndices]):
         """Compute the cost of a single iteration of the permutation sampling.
 
         Computes the cost of performing a single iteration of the permutation sampling given
-        the order, the number of players, and the Rred index.
+        the order, the number of players, and the RI index.
 
         Returns:
             int: The cost of a single iteration.
@@ -85,7 +87,7 @@ class PermutationSamplingRred(Approximator[ValidPermutationRredIndices]):
         return iteration_cost
 
     def _compute_order_iterator(self) -> np.ndarray:
-        """Computes the order iterator for the Rred index.
+        """Computes the order iterator for the RI index.
 
         Returns:
             np.ndarray: The order iterator.
@@ -120,6 +122,7 @@ class PermutationSamplingRred(Approximator[ValidPermutationRredIndices]):
             The estimated interaction values.
 
         """
+        ksii_interaction_values = np.asarray(self.approximator.approximate(x=x, budget=budget, game=game))
         result: FloatVector = self._init_result()
         counts: IntVector = self._init_result(dtype=int)
 
@@ -165,42 +168,15 @@ class PermutationSamplingRred(Approximator[ValidPermutationRredIndices]):
         counts: IntVector = self._init_result(dtype=int)
         
         interaction_index = self.n+1
-        for u in range(self.n):
-            for v in range(self.n):
+        for u in range(1,self.n+1):
+            for v in range(1,self.n+1):
                 if v<=u:
                     continue
                 else:
-                    for coalition in coalitions:
-                        if coalition[u] or coalition[v]:
-                            continue
-                        else:
-                            fS = game(np.array([coalition]))[0]
-                            coalition[u] = True
-                            guS = game(np.array([coalition]))[0] - fS
-                            coalition[u] = False
-
-                            coalition[v] = True
-                            gvS = game(np.array([coalition]))[0] - fS
-                            coalition[v] = False
-
-                            coalition[v] = True
-                            coalition[u] = True
-                            guvS = game(np.array([coalition]))[0] - fS
-                            coalition[v] = False
-                            coalition[u] = False
-
-                            gmax = max(abs(guS), abs(gvS))
-
-                            baseS = min(abs(guvS), abs(gmax))
-
-                            spanS = abs(abs(guvS)-abs(gmax))
-
-                            #print(f"u: {u}, v: {v}, guS: {guS}, gvS: {gvS}, guvS: {guvS}, gmax: {gmax}, baseS: {baseS}, spanS: {spanS}")
-
-                            span_mean[interaction_index]+=spanS
-                            result[interaction_index]+=baseS
-                            counts[interaction_index]+=1
-                            
+                    #print(u,v,interaction_index)
+                    #print(ksii_interaction_values[u],ksii_interaction_values[v],ksii_interaction_values[interaction_index])
+                    result[interaction_index]=ksii_interaction_values[interaction_index]/(ksii_interaction_values[interaction_index]+ksii_interaction_values[u]+ksii_interaction_values[v])
+                                
                     interaction_index+=1
         result = np.divide(result, counts, out=result, where=counts != 0)
         span_mean = np.divide(span_mean, counts, out=span_mean, where=counts != 0)

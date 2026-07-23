@@ -62,7 +62,7 @@ class TabularExplainer(Explainer):
     ) -> None:
         self.model=model
         self.data=data
-        print("Model and x in tabular:", self.model, self.data)
+        #print("Model and x in tabular:", self.model, self.data)
         """Initializes the TabularExplainer.
 
         Args:

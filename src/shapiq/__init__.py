@@ -35,6 +35,7 @@ from .approximator import (
     UnbiasedKernelSHAP,
     kADDSHAP,
     PermutationSamplingRred,
+    PermutationSamplingRI,
 )
 
 # dataset functions
@@ -100,6 +101,7 @@ __all__ = [
     # approximators
     "PermutationSamplingSII",
     "PermutationSamplingSTII",
+    "PermutationSamplingRred",
     "PermutationSamplingRred",
     "PermutationSamplingSV",
     "StratifiedSamplingSV",
