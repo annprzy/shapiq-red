@@ -123,6 +123,7 @@ class PermutationSamplingRI(Approximator[ValidPermutationRIIndices]):
 
         """
         ksii_interaction_values = np.asarray(self.approximator.approximate(x=x, budget=budget, game=game))
+        print(self.approximator)
         result: FloatVector = self._init_result()
         counts: IntVector = self._init_result(dtype=int)
 

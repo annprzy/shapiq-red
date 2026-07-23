@@ -182,12 +182,11 @@ def setup_approximator_automatically(
     if index == "Rred":
         return PermutationSamplingRred(n=n_players, max_order=max_order, random_state=random_state, model=model)
     if index == "RI":
-        return PermutationSamplingRI(n=n_players, max_order=max_order, random_state=random_state, approximator=SVARMIQ(
+        return PermutationSamplingRI(n=n_players, max_order=max_order, random_state=random_state, approximator=KernelSHAPIQ(
             n=n_players,
             max_order=max_order,
-            top_order=False,
-            random_state=random_state,
             index="k-SII",
+            random_state=random_state,
         ))
     if index in KernelSHAPIQ.valid_indices:
         return KernelSHAPIQ(
