@@ -13,6 +13,7 @@ from .sentence import sentence_plot
 from .si_graph import si_graph_plot
 from .stacked_bar import stacked_bar_plot
 from .upset import upset_plot
+from .waterfall_with_types import waterfall_plot_types
 from .utils import abbreviate_feature_names
 from .waterfall import waterfall_plot
 
@@ -26,6 +27,7 @@ __all__ = [
     "sentence_plot",
     "upset_plot",
     "beeswarm_plot",
+    "waterfall_plot_types",
     "scatter_plot",
     # utils
     "abbreviate_feature_names",

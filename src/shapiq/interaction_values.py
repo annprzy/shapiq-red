@@ -1061,6 +1061,18 @@ class InteractionValues:
         from shapiq.plot.upset import upset_plot
 
         return upset_plot(self, show=show, **kwargs)
+    def waterfall_plot_types(self,model,x,sample_data, *, show: bool = True, **kwargs: Any) -> Figure | None:
+            """Plots the upset plot with types.
+    
+            For arguments, see shapiq.plot.upset_plot().
+    
+            Returns:
+                The upset plot as a matplotlib figure (if show is ``False``).
+    
+            """
+            from shapiq.plot.waterfall_with_types import waterfall_plot_types
+    
+            return waterfall_plot_types(self,model,x,sample_data, show=show, **kwargs)
 
 
 def aggregate_interaction_values(
