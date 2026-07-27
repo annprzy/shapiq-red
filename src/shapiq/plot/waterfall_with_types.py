@@ -31,6 +31,7 @@ def _draw_waterfall_plot(
     values: np.ndarray,
     base_values: float,
     feature_names: np.ndarray | list[str],
+    types: np.ndarray | list[str] | None = None,
     *,
     max_display: int = 10,
     show: bool = False,
@@ -103,6 +104,7 @@ def _draw_waterfall_plot(
                 zorder=-1,
             )
         yticklabels[rng[i]] = str(feature_names[order[i]])
+        
 
     # add a last grouped feature to represent the impact of all the features we didn't show
     if num_features < len(values):
@@ -177,7 +179,6 @@ def _draw_waterfall_plot(
                 xerr=np.array([[pos_widths[i] - pos_low[i]], [pos_high[i] - pos_widths[i]]]),
                 ecolor=BLUE.hex,
             )
-
         txt_obj = plt.text(
             pos_lefts[i] + 0.5 * dist,
             pos_inds[i],
@@ -267,6 +268,8 @@ def _draw_waterfall_plot(
         max([label.get_window_extent(renderer=renderer).width for label in ax.get_yticklabels()])
         / dpi
     )
+    for label in ax.get_yticklabels():
+        label.set_horizontalalignment('center')
     if max_label_width > 0.1 * fig.get_size_inches()[0]:
         required_width = max_label_width / 0.1
         fig_height = fig.get_size_inches()[1]
@@ -405,7 +408,7 @@ def waterfall_plot_types(
     values = data[:, 1].astype(float)
     feature_names = data[:, 0]
     for i in range(len(types)):
-        feature_names[i+len(x)]+=" "+types[i]
+        feature_names[i+len(x)]+="\n"+types[i]
     
 
     return _draw_waterfall_plot(
@@ -414,4 +417,5 @@ def waterfall_plot_types(
         feature_names,
         max_display=max_display,
         show=show,
+        types=types,
     )
