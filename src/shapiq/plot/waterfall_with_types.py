@@ -18,6 +18,7 @@ from ._config import BLUE, RED
 from .utils import abbreviate_feature_names, format_labels, format_value
 
 from shapiq.interaction_type_explainer import TypeExplainer
+from shapiq import TabularExplainer
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -31,7 +32,9 @@ def _draw_waterfall_plot(
     values: np.ndarray,
     base_values: float,
     feature_names: np.ndarray | list[str],
-    types: np.ndarray | list[str] | None = None,
+    reds: np.ndarray | list[str] | None = None,
+    ris: np.ndarray | list[str] | None = None,
+    n: int=0,
     *,
     max_display: int = 10,
     show: bool = False,
@@ -68,13 +71,17 @@ def _draw_waterfall_plot(
     pos_widths = []
     pos_low = []
     pos_high = []
+    pos_orig_inds = []
     neg_lefts = []
     neg_inds = []
     neg_widths = []
     neg_low = []
     neg_high = []
+    neg_orig_inds = []
     loc = base_values + values.sum()
     yticklabels = ["" for _ in range(num_features + 1)]
+    reds=np.array(reds)
+    ris=np.array(ris)
 
     # size the plot based on how many features we are plotting
     plt.gcf().set_size_inches(8, num_features * row_height + 3.5)
@@ -90,10 +97,12 @@ def _draw_waterfall_plot(
             pos_inds.append(rng[i])
             pos_widths.append(sval)
             pos_lefts.append(loc)
+            pos_orig_inds.append(order[i])
         else:
             neg_inds.append(rng[i])
             neg_widths.append(sval)
             neg_lefts.append(loc)
+            neg_orig_inds.append(order[i])
         if num_individual != num_features or i + 4 < num_individual:
             plt.plot(
                 [loc, loc],
@@ -157,7 +166,6 @@ def _draw_waterfall_plot(
     hl_scaled = bbox_to_xscale * head_length
     dpi = fig.dpi
     renderer = fig.canvas.get_renderer()  # type: ignore[union-attr]
-
     # draw the positive arrows
     for i in range(len(pos_inds)):
         dist = pos_widths[i]
@@ -171,6 +179,7 @@ def _draw_waterfall_plot(
             width=bar_width,
             head_width=bar_width,
         )
+        
 
         if pos_low is not None and i < len(pos_low):
             plt.errorbar(
@@ -178,16 +187,21 @@ def _draw_waterfall_plot(
                 pos_inds[i],
                 xerr=np.array([[pos_widths[i] - pos_low[i]], [pos_high[i] - pos_widths[i]]]),
                 ecolor=BLUE.hex,
-            )
+                )
+        text = format_value(pos_widths[i], "%+0.02f")
+        feat_idx = pos_orig_inds[i]
+        if feat_idx >= n:
+            text=f"{text}\n Rred: {round(reds[feat_idx+1], 2)} RI: {round(ris[feat_idx+1], 2)}"      
         txt_obj = plt.text(
             pos_lefts[i] + 0.5 * dist,
             pos_inds[i],
-            format_value(pos_widths[i], "%+0.02f"),
+            text,
             horizontalalignment="center",
             verticalalignment="center",
             color="white",
             fontsize=12,
         )
+        
         text_bbox = txt_obj.get_window_extent(renderer=renderer)
         arrow_bbox = arrow_obj.get_window_extent(renderer=renderer)
 
@@ -198,7 +212,7 @@ def _draw_waterfall_plot(
             txt_obj = plt.text(
                 pos_lefts[i] + (5 / 72) * bbox_to_xscale + dist,
                 pos_inds[i],
-                format_value(pos_widths[i], "%+0.02f"),
+                text,
                 horizontalalignment="left",
                 verticalalignment="center",
                 color=RED.hex,
@@ -227,16 +241,20 @@ def _draw_waterfall_plot(
                 xerr=np.array([[neg_widths[i] - neg_low[i]], [neg_high[i] - neg_widths[i]]]),
                 ecolor=RED.hex,
             )
-
+        text = format_value(neg_widths[i], "%+0.02f")
+        feat_idx = neg_orig_inds[i]
+        if feat_idx >= n:
+            text=f"{text}\n Rred: {round(reds[feat_idx+1], 2)} RI: {round(ris[feat_idx+1], 2)}"
         txt_obj = plt.text(
             neg_lefts[i] + 0.5 * dist,
             neg_inds[i],
-            format_value(neg_widths[i], "%+0.02f"),
+            text,
             horizontalalignment="center",
             verticalalignment="center",
             color="white",
             fontsize=12,
         )
+        
         text_bbox = txt_obj.get_window_extent(renderer=renderer)
         arrow_bbox = arrow_obj.get_window_extent(renderer=renderer)
 
@@ -247,12 +265,13 @@ def _draw_waterfall_plot(
             plt.text(
                 neg_lefts[i] - (5 / 72) * bbox_to_xscale + dist,
                 neg_inds[i],
-                format_value(neg_widths[i], "%+0.02f"),
+                text,
                 horizontalalignment="right",
                 verticalalignment="center",
                 color=BLUE.hex,
                 fontsize=12,
             )
+            
 
     # draw the y-ticks twice, once in gray and then again with just the feature names in black
     # The 1e-8 is so matplotlib 3.3 doesn't try and collapse the ticks
@@ -369,6 +388,7 @@ def waterfall_plot_types(
     sample_data: np.ndarray,
     *,
     feature_names: np.ndarray | list[str] | None = None,
+    budget: int = 256,
     show: bool = False,
     max_display: int = 10,
     abbreviate: bool = True,
@@ -392,6 +412,21 @@ def waterfall_plot_types(
 
     """
     types = TypeExplainer(x,model,sample_data).explain()
+    #print(types)
+    red_ind = TabularExplainer(
+        model=model, 
+        data=sample_data,
+        index="Rred",
+        max_order=2,
+    ).explain(x=x, budget=budget)
+    ris_ind = TabularExplainer(
+        model=model, 
+        data=sample_data,
+        index="RI",
+        max_order=2,
+    ).explain(x=x, budget=budget)
+    print(np.asarray(red_ind))
+    print(np.asarray(ris_ind))
     if feature_names is None:
         feature_mapping = {i: str(i) for i in range(interaction_values.n_players)}
     else:
@@ -409,6 +444,8 @@ def waterfall_plot_types(
     feature_names = data[:, 0]
     for i in range(len(types)):
         feature_names[i+len(x)]+="\n"+types[i]
+    # for i in range(len(x),feature_names.shape[0]):
+    #     feature_names[i] = feature_names[i] + "\n" + "Redundancy Index: " + str(round(red_ind[i], 3))
     
 
     return _draw_waterfall_plot(
@@ -417,5 +454,7 @@ def waterfall_plot_types(
         feature_names,
         max_display=max_display,
         show=show,
-        types=types,
+        reds=red_ind,
+        ris=ris_ind,
+        n=len(x)
     )

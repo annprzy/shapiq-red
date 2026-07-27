@@ -10,11 +10,12 @@ class TypeExplainer:
     interaction type explainer class
     """
 
-    def __init__(self, x, model, sample_data, index="Rred"):
+    def __init__(self, x, model, sample_data, index="Rred", budget=256):
         self.x = x
         self.model = model
         self.data = sample_data
         self.index = index
+        self.budget = budget
 
     def sign(self, a, margin=0.001):
         """
@@ -38,7 +39,7 @@ class TypeExplainer:
             sample_size=len(self.data),
         )
 
-        valuessii = np.asarray(explainersii.explain(self.x, budget=256))
+        valuessii = np.asarray(explainersii.explain(self.x, budget=self.budget))
 
         explainerrred = TabularExplainer(
             model=self.model,
@@ -48,7 +49,7 @@ class TypeExplainer:
             normalize=False,
             sample_size=len(self.data),
         )
-        valuesrred = np.asarray(explainerrred.explain(self.x, budget=256))
+        valuesrred = np.asarray(explainerrred.explain(self.x, budget=self.budget))
         result = []
         interaction_index = n + 1
         for i in range(1, n + 1):
