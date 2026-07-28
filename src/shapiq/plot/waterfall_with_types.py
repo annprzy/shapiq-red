@@ -38,6 +38,7 @@ def _draw_waterfall_plot(
     *,
     max_display: int = 10,
     show: bool = False,
+    feature_values: np.ndarray | None = None
 ) -> Axes | None:
     """The waterfall plot from the SHAP package.
 
@@ -375,6 +376,29 @@ def _draw_waterfall_plot(
     for i in range(num_features):
         tick_labels[i].set_color("#999999")
 
+    if feature_values is not None:
+        num_vals = min(len(feature_values), num_features)
+        legend_labels = [
+            f"{feature_names[i]} = {feature_values[i]}" 
+            for i in range(num_vals)
+        ]
+        
+        # Create dummy plot entries for the legend
+        handles = [
+            plt.Line2D([0], [0], color="none", label=label) 
+            for label in legend_labels
+        ]
+        
+        ax.legend(
+            handles=handles,
+            title="Feature Values",
+            loc="upper left",
+            bbox_to_anchor=(0.95, 1),
+            frameon=True,
+            handlelength=0,
+            handletextpad=0,
+        )
+
     if show:
         plt.show()
         return None
@@ -425,8 +449,7 @@ def waterfall_plot_types(
         index="RI",
         max_order=2,
     ).explain(x=x, budget=budget)
-    print(np.asarray(red_ind))
-    print(np.asarray(ris_ind))
+    
     if feature_names is None:
         feature_mapping = {i: str(i) for i in range(interaction_values.n_players)}
     else:
@@ -456,5 +479,6 @@ def waterfall_plot_types(
         show=show,
         reds=red_ind,
         ris=ris_ind,
-        n=len(x)
+        n=len(x),
+        feature_values=x
     )
