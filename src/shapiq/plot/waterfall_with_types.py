@@ -411,7 +411,7 @@ def waterfall_plot_types(
         The plot if ``show`` is ``False``.
 
     """
-    types = TypeExplainer(x,model,sample_data).explain()
+    types = TypeExplainer(x,model,sample_data, index="RI").explain()
     #print(types)
     red_ind = TabularExplainer(
         model=model, 
