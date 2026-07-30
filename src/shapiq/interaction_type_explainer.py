@@ -60,7 +60,7 @@ class TypeExplainer:
                 # print(value1, value2, values_combined)
                 if values_combined > -0.00001 and values_combined < 0.00001:
                     result.append("independence")
-                if self.sign(value1) == self.sign(value2) == self.sign(values_combined):
+                elif self.sign(value1) == self.sign(value2) == self.sign(values_combined):
                     result.append("synergy")
                 elif self.index == "Rred" and valuesrred[interaction_index] > 0:
                     result.append("redundancy")
