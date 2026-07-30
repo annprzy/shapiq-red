@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import itertools
 from typing import TYPE_CHECKING, Any, Literal, get_args
 
 import numpy as np
@@ -158,7 +159,7 @@ class PermutationSamplingRred(Approximator[ValidPermutationRredIndices]):
             batch_size,
             self.iteration_cost,
         )
-        coalitions = data
+        coalitions = np.array(list(itertools.product([True, False], repeat=len(data[0]))))
 
         result: FloatVector = self._init_result()
         span_mean: FloatVector = self._init_result()
@@ -174,6 +175,7 @@ class PermutationSamplingRred(Approximator[ValidPermutationRredIndices]):
                         if coalition[u] or coalition[v]:
                             continue
                         else:
+                            
                             fS = game(np.array([coalition]))[0]
                             coalition[u] = True
                             guS = game(np.array([coalition]))[0] - fS
