@@ -52,33 +52,37 @@ class TypeExplainer:
         )
         valuesrred = explainerrred.explain(self.x, budget=self.budget)
         result = []
-        for key, value in valuessii.dict_values.items():
+        for key, values_combined in valuessii.dict_values.items():
             lista = list(key)
             if(len(lista) > 1):
                 singular_result = {
-                    "name": key,
-                    "synergy": 0,
-                    "redundancy": 0,
-                    "antagonism": 0,
-                    "independence": 0,
+                    "interaction name": key,
+                    "synergy": True,
+                    "redundancy": [],
+                    "antagonism": [],
+                    "independence": [],
                 }
                 for i in lista:
-                    rest = lista.copy()
-                    rest.remove(i)
-                    rest = tuple(rest)
-                    value1 = valuessii[tuple([i])]
-                    value2 = valuessii[rest]
-                    values_combined = valuessii[key]
-                    print(value1, value2, values_combined)
-                    if values_combined > -0.00001 and values_combined < 0.00001:
-                        singular_result["independence"] += 1
-                    elif self.sign(value1) == self.sign(value2) == self.sign(values_combined):
-                        singular_result["synergy"] += 1
-                    elif self.index == "Rred" and valuesrred[key] > 0:
-                        singular_result["redundancy"] += 1
-                    elif self.index == "RI" and valuesrred[key] < 0:
-                        singular_result["redundancy"] += 1
-                    else:
-                        singular_result["antagonism"] += 1
-                result.append(singular_result)
+                    if self.sign(valuessii[i]) != self.sign(valuessii[key]):
+                        singular_result["synergy"] = False
+                if singular_result["synergy"]:
+                    result.append(singular_result)
+                    continue
+                else:
+                    for i in lista:
+                        rest = lista.copy()
+                        rest.remove(i)
+                        rest = tuple(rest)
+                        value1 = valuessii[tuple([i])]
+                        value2 = valuessii[rest]
+                        #print(value1, value2, values_combined)
+                        if values_combined > -0.00001 and values_combined < 0.00001:
+                            singular_result["independence"].append(i)
+                        elif self.index == "Rred" and valuesrred[key] > 0:
+                            singular_result["redundancy"].append(i)
+                        elif self.index == "RI" and valuesrred[key] < 0:
+                            singular_result["redundancy"].append(i)
+                        else:
+                            singular_result["antagonism"].append(i)
+                    result.append(singular_result)
         return result
