@@ -58,9 +58,9 @@ class TypeExplainer:
                 singular_result = {
                     "interaction name": key,
                     "synergy": True,
-                    "redundancy": [],
-                    "antagonism": [],
-                    "independence": [],
+                    "redundancy": 0,
+                    "antagonism": 0,
+                    "independence": 0,
                 }
                 for i in lista:
                     if self.sign(valuessii[i]) != self.sign(valuessii[key]):
@@ -77,12 +77,12 @@ class TypeExplainer:
                         value2 = valuessii[rest]
                         #print(value1, value2, values_combined)
                         if values_combined > -0.00001 and values_combined < 0.00001:
-                            singular_result["independence"].append(i)
+                            singular_result["independence"] += 1
                         elif self.index == "Rred" and valuesrred[key] > 0:
-                            singular_result["redundancy"].append(i)
+                            singular_result["redundancy"] += 1
                         elif self.index == "RI" and valuesrred[key] < 0:
-                            singular_result["redundancy"].append(i)
+                            singular_result["redundancy"] += 1
                         else:
-                            singular_result["antagonism"].append(i)
+                            singular_result["antagonism"] += 1
                     result.append(singular_result)
         return result
