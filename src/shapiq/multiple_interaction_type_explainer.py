@@ -63,7 +63,7 @@ class TypeExplainer:
                     "antagonism": 0,
                     "partial independence": 0,
                 }
-                if self.sign(values_combined) < 0.00001 and self.sign(values_combined) > -0.00001:
+                if values_combined < 0.00001 and values_combined > -0.00001:
                     singular_result["full independence"] = True
                     singular_result["synergy"] = False
                     result.append(singular_result)
