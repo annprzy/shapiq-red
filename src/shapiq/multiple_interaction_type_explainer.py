@@ -100,7 +100,7 @@ class TypeExplainer:
             ranks = rankdata(X[:, col], method="average") / (N + 1.0)
             X_norm[:, col] = norm.ppf(ranks)
         return X_norm
-    def predict_type(self, coalition=None):
+    def predict_type(self, coalition=None, trials=100):
         """
         predict interaction type of a given input
         """
@@ -110,7 +110,7 @@ class TypeExplainer:
         model = self.model
         data = self.data
         budget = self.budget
-        oinfo = self.o_information(x, model, data, coalition)
+        oinfo = self.o_information(x, model, data, coalition, trials=trials)
         if oinfo > 0:
             return "redundancy"
         elif oinfo < 0:
