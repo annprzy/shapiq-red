@@ -111,19 +111,21 @@ class TypeExplainer:
         data = self.data
         budget = self.budget
         oinfo = self.o_information(x, model, data, coalition, trials=trials)
-        if oinfo > 0:
+        explainer = TabularExplainer(
+            model=model,
+            data=data,
+            index="k-SII",
+            max_order=len(x),
+        ).explain(x, budget=budget)
+        if explainer.dict_values[coalition]<0.00001 and explainer.dict_values[coalition]>-0.00001:
+            return "independence"
+        elif oinfo > 0:
             return "redundancy"
-        elif oinfo < 0:
-            explainer = TabularExplainer(
-                model=model,
-                data=data,
-                index="k-SII",
-                max_order=len(x),
-            ).explain(x, budget=budget)
-        for i in list(coalition):
-            if self.sign(explainer[i+1]) != self.sign(explainer.dict_values[coalition]):
-                return "antagonism"
-        return "synergy"
+        else:
+            for i in list(coalition):
+                if self.sign(explainer[i+1]) != self.sign(explainer.dict_values[coalition]):
+                    return "antagonism"
+            return "synergy"
 
     
 
