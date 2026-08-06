@@ -1,8 +1,11 @@
 """
 module explaining the interaction types
 """
+from xml.parsers.expat import model
+
 import numpy as np
 from shapiq import TabularExplainer
+import itertools
 
 
 class TypeExplainer:
@@ -24,11 +27,22 @@ class TypeExplainer:
         if a + margin > 0:
             return 1
         return -1
+    def calculate_main_effect(self, coalition, explainersii):
+        """
+        calculate main effect of a coalition
+        """
+        merged_main_effect = 0.0
+        for r in range(1, len(coalition) + 1):
+            for subset in itertools.combinations(coalition, r):
+                key = tuple(sorted(subset))
+                merged_main_effect += explainersii.dict_values[key]
+        return merged_main_effect
     def explain_coalition_interaction(self, coalition1, coalition2):
         """
         explain interaction between two coalitions
         """
         n = len(self.x)
+
         explainersii = TabularExplainer(
             model=self.model,
             data=self.data,
@@ -38,6 +52,9 @@ class TypeExplainer:
             sample_size=len(self.data),
         ).explain(self.x, budget=self.budget)
 
+        value1 = self.calculate_main_effect(coalition1, explainersii)
+        value2 = self.calculate_main_effect(coalition2, explainersii)
+
         valuesri = TabularExplainer(
             model=self.model,
             data=self.data,
@@ -46,10 +63,10 @@ class TypeExplainer:
             normalize=False,
             sample_size=len(self.data),
         ).explain(self.x, budget=self.budget)
-        value1 = explainersii.dict_values[coalition1]
-        value2 = explainersii.dict_values[coalition2]
+
         mix = tuple(set(coalition1).union(set(coalition2)))
         values_combined = explainersii.dict_values[mix]
+        #print(value1, value2, values_combined)
         synergy = True
         for i in mix:
             if self.sign(explainersii.dict_values[tuple([i])]) != self.sign(values_combined):
