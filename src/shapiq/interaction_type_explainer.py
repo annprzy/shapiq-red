@@ -13,7 +13,7 @@ class TypeExplainer:
     interaction type explainer class
     """
 
-    def __init__(self, x, model, sample_data, index="Rred", budget=256):
+    def __init__(self, x, model, sample_data, index="RI", budget=256):
         self.x = x
         self.model = model
         self.data = sample_data
@@ -66,7 +66,11 @@ class TypeExplainer:
 
         mix = tuple(set(coalition1).union(set(coalition2)))
         values_combined = explainersii.dict_values[mix]
+
+        RI = values_combined / (value1 + value2 + values_combined) if (value1 + value2 + values_combined) != 0 else 0
+        #print("RI:", RI)
         #print(value1, value2, values_combined)
+        
         synergy = True
         for i in mix:
             if self.sign(explainersii.dict_values[tuple([i])]) != self.sign(values_combined):
@@ -77,7 +81,7 @@ class TypeExplainer:
             return "synergy"
         elif self.index == "Rred" and valuesri.dict_values[mix] > 0:
             return "redundancy"
-        elif self.index == "RI" and valuesri.dict_values[mix] < 0:
+        elif self.index == "RI" and RI < 0:
             return "redundancy"
         else:
             return "antagonism"
