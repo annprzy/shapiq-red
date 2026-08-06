@@ -24,7 +24,46 @@ class TypeExplainer:
         if a + margin > 0:
             return 1
         return -1
+    def explain_coalition_interaction(self, coalition1, coalition2):
+        """
+        explain interaction between two coalitions
+        """
+        n = len(self.x)
+        explainersii = TabularExplainer(
+            model=self.model,
+            data=self.data,
+            index="k-SII",
+            max_order=n,
+            normalize=False,
+            sample_size=len(self.data),
+        ).explain(self.x, budget=self.budget)
 
+        valuesri = TabularExplainer(
+            model=self.model,
+            data=self.data,
+            index=self.index,
+            max_order=n,
+            normalize=False,
+            sample_size=len(self.data),
+        ).explain(self.x, budget=self.budget)
+        value1 = explainersii.dict_values[coalition1]
+        value2 = explainersii.dict_values[coalition2]
+        mix = tuple(set(coalition1).union(set(coalition2)))
+        values_combined = explainersii.dict_values[mix]
+        synergy = True
+        for i in mix:
+            if self.sign(explainersii.dict_values[tuple([i])]) != self.sign(values_combined):
+                synergy = False
+        if values_combined > -0.00001 and values_combined < 0.00001:
+            return "independence"
+        elif synergy and self.sign(value1) == self.sign(value2) == self.sign(values_combined):
+            return "synergy"
+        elif self.index == "Rred" and valuesri.dict_values[mix] > 0:
+            return "redundancy"
+        elif self.index == "RI" and valuesri.dict_values[mix] < 0:
+            return "redundancy"
+        else:
+            return "antagonism"
     def explain(self):
         """
         explain interaction type by returing an array of their names
