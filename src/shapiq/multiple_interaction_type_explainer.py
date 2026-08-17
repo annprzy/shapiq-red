@@ -40,7 +40,7 @@ class TypeExplainer:
 
         return ind, data_with_y
 
-    def o_information(self, x, model, data, coalition, trials=100):
+    def o_information(self, x, model, data, coalition, trials=100, data_type="discrete"):
         """
         compute o-information of a given input
         """
@@ -53,7 +53,7 @@ class TypeExplainer:
                 to_delete.append(i-1)
         prepared_data = np.delete(prepared_data, to_delete, axis=1)
         x = np.delete(x, to_delete, axis=0)
-        oinfo = self.continuous_local_oinfo(prepared_data)
+        oinfo = self.continuous_local_oinfo(prepared_data, data_type=data_type)
         return oinfo[ind]
     def copula_transform(self,  X: np.ndarray) -> np.ndarray:
         """Transforms continuous/clustered feature columns into standard Gaussian distributions
@@ -67,10 +67,39 @@ class TypeExplainer:
             ranks = (rankdata(X[:, col], method="average") - 0.5) / N
             X_gauss[:, col] = norm.ppf(ranks)
         return X_gauss
+    def discrete_local_oinfo(self, X: np.ndarray) -> np.ndarray:
+        data = np.asarray(X)
+        n_samples, n_vars = data.shape
+        
+        if n_vars < 3:
+            raise ValueError("O-information requires at least 3 variables.")
+
+        def get_surprisals(subset):
+            """Helper to calculate -log2(p) for every row in a subset."""
+            _, inverse_idx, counts = np.unique(subset, axis=0, return_inverse=True, return_counts=True)
+            
+            probs = counts / n_samples
+            return -np.log2(probs[inverse_idx])
+
+        h_X = get_surprisals(data)
+
+        sum_h_X_minus_i = np.zeros(n_samples)
+        sum_h_X_i = np.zeros(n_samples)
+
+        for i in range(n_vars):
+            sum_h_X_i += get_surprisals(data[:, [i]])
+            mask = [j for j in range(n_vars) if j != i]
+            sum_h_X_minus_i += get_surprisals(data[:, mask])
+
+        local_o_info = (n_vars - 2) * h_X + sum_h_X_minus_i - sum_h_X_i
+        print(local_o_info)
+        return local_o_info
     def continuous_local_oinfo(
-        self, X: np.ndarray, bw_method: float = 0.4
+        self, X: np.ndarray, bw_method: float = 0.4, data_type: str = "discrete"
     ) -> np.ndarray:
         """Computes Local O-information for continuous features using Gaussian Copula + KDE."""
+        if data_type == "discrete":
+            return self.discrete_local_oinfo(X=X)
         X_norm = self.copula_transform(X)
 
         N, n_features = X_norm.shape
@@ -100,7 +129,7 @@ class TypeExplainer:
             ranks = rankdata(X[:, col], method="average") / (N + 1.0)
             X_norm[:, col] = norm.ppf(ranks)
         return X_norm
-    def predict_type(self, coalition=None, trials=100):
+    def predict_type(self, coalition=None, trials=100, data_type="discrete"):
         """
         predict interaction type of a given input
         """
@@ -110,7 +139,7 @@ class TypeExplainer:
         model = self.model
         data = self.data
         budget = self.budget
-        oinfo = self.o_information(x, model, data, coalition, trials=trials)
+        oinfo = self.o_information(x, model, data, coalition, trials=trials, data_type=data_type)
         explainer = TabularExplainer(
             model=model,
             data=data,
