@@ -18,10 +18,21 @@ class TypeExplainer:
         self.index = index
         self.budget = budget
         self.max_order = max_order
+    
     def prepare_data(self, data, model, x, trials):
         """
         prepare data for o-information computation
         """
+        def get_index_combinations(n):
+            from itertools import combinations
+            indexes = range(n)
+            
+            result = [
+                list(comb) 
+                for r in range(0, n + 1) 
+                for comb in combinations(indexes, r)
+            ]
+            return result
         data_with_y = []
         ind = -1
         
@@ -36,8 +47,36 @@ class TypeExplainer:
         for i in range(s):
             for j in range(trials):
                 data_with_y.append(data_with_y[i])
-        data_with_y = np.array(data_with_y)
-
+        indexes = get_index_combinations(len(data_with_y[0]) - 1)
+        new_data_with_y = []
+        for j in indexes:
+            for a in data_with_y:
+                avg = 0
+                count = 0
+                for i in data_with_y:
+                        valid = True
+                        for k in j:
+                            if a[k] != i[k]:
+                                valid = False
+                                break
+                        if valid:
+                            avg += i[len(i) - 1]
+                            count += 1
+                avg /= count
+                new = []
+                for k in range(len(a) - 1):
+                    if k in j:
+                        new.append(a[k])
+                    else:
+                        new.append(np.nan)
+                new.append(avg)
+                if new not in new_data_with_y:
+                    new_data_with_y.append(new)
+        for i in range(len(new_data_with_y)):
+            if (new_data_with_y[i] == data_with_y[ind]).all():
+                ind = i
+                break
+        data_with_y = np.array(new_data_with_y)
         return ind, data_with_y
 
     def o_information(self, x, model, data, coalition, trials=100, data_type="discrete"):
@@ -56,11 +95,6 @@ class TypeExplainer:
         oinfo = self.continuous_local_oinfo(prepared_data, data_type=data_type)
         return oinfo[ind]
     def copula_transform(self,  X: np.ndarray) -> np.ndarray:
-        """Transforms continuous/clustered feature columns into standard Gaussian distributions
-
-        (N(0,1)) using empirical probability integral transform (Copula).
-        This normalizes 1D, 3D, and 4D subspace scaling for KDE density estimation.
-        """
         N, d = X.shape
         X_gauss = np.zeros_like(X)
         for col in range(d):
@@ -79,7 +113,7 @@ class TypeExplainer:
             _, inverse_idx, counts = np.unique(subset, axis=0, return_inverse=True, return_counts=True)
             
             probs = counts / n_samples
-            return -np.log2(probs[inverse_idx])
+            return -np.log2(probs[inverse_idx])*probs[inverse_idx]
 
         h_X = get_surprisals(data)
 
@@ -92,7 +126,7 @@ class TypeExplainer:
             sum_h_X_minus_i += get_surprisals(data[:, mask])
 
         local_o_info = (n_vars - 2) * h_X + sum_h_X_minus_i - sum_h_X_i
-        print(local_o_info)
+        #print(local_o_info)
         return local_o_info
     def continuous_local_oinfo(
         self, X: np.ndarray, bw_method: float = 0.4, data_type: str = "discrete"
@@ -118,17 +152,6 @@ class TypeExplainer:
             kde_sub = gaussian_kde(subset.T, bw_method=bw_method)
             i_leave_one_out += -kde_sub.logpdf(subset.T)
         return (n_features - 2) * i_full + i_indiv - i_leave_one_out
-    def copula_transform(self, X: np.ndarray) -> np.ndarray:
-        """Transforms data to standard normal marginals via empirical copula
-
-        to stabilize k-NN density estimation on clustered/jittered data.
-        """
-        N, d = X.shape
-        X_norm = np.zeros_like(X)
-        for col in range(d):
-            ranks = rankdata(X[:, col], method="average") / (N + 1.0)
-            X_norm[:, col] = norm.ppf(ranks)
-        return X_norm
     def predict_type(self, coalition=None, trials=100, data_type="discrete"):
         """
         predict interaction type of a given input
