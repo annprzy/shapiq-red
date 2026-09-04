@@ -81,7 +81,7 @@ class TypeExplainer:
         )
         approximator = PermutationSamplingSII(
             n=len(full_groups), 
-            max_order=max(len(coalition1), len(coalition2)), 
+            max_order=max(len(coalition1), len(coalition2), 2), 
             index="k-SII",
             random_state=42,
         )
