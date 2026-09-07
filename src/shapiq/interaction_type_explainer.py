@@ -67,32 +67,43 @@ class TypeExplainer:
 
             return grouped_game, full_groups
 
+        x_explain = np.array(self.x).flatten()
         imputer = MarginalImputer(model=self.model, data=self.data, random_state=42)
-        imputer.fit(self.x)
-        base_value_function = imputer.value_function
+        imputer.fit(x_explain)
+        base_value_function = imputer.value_function 
+
+        # 2. Setup your groups
         n_features = self.data.shape[1]
-
         my_groups = [list(coalition1), list(coalition2)]
+        for i in range(n_features):
+            if i not in coalition1 and i not in coalition2:
+                my_groups.append([i])
 
+        # 3. Create the grouped game
         grouped_game, full_groups = create_grouped_game(
             base_value_function=base_value_function,
             groups=my_groups,
             n_features=n_features
         )
+        n_groups = len(full_groups)
+        
         approximator = PermutationSamplingSII(
-            n=len(full_groups), 
-            max_order=max(len(coalition1), len(coalition2), 2), 
+            n=n_groups, 
+            max_order=n_groups,
             index="k-SII",
             random_state=42,
         )
 
         explainersii = approximator.approximate(budget=self.budget, game=grouped_game)
+        #print(explainersii.dict_values, self.x, self.data, coalition1, coalition2)
 
+        try:
+            value1 = explainersii.dict_values[(0,)]
+            value2 = explainersii.dict_values[(1,)]
 
-        value1 = explainersii.dict_values[(0,)]
-        value2 = explainersii.dict_values[(1,)]
-        #print(explainersii.dict_values)
-        values_combined = explainersii.dict_values[(0, 1)]
+            values_combined = explainersii.dict_values[(0,1)]
+        except KeyError:
+            print("KeyError: ", coalition1, coalition2, explainersii.dict_values, KeyError)
 
         RI = values_combined / (value1 + value2 + values_combined) if (value1 + value2 + values_combined) != 0 else 0
         
